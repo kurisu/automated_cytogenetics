@@ -196,3 +196,4 @@ cython_debug/
 /sam_b.pt
 /segmentation
 /weights
+/exp10-new
