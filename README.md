@@ -7,21 +7,26 @@ Though well-established, manual karyotype analysis is labor-intensive and relies
 The proposed solution has four phases: chromosome detection, chromosome segmentation, karyogram synthesis, and cytogenetic analysis. 
 
 ## Chromosome Detection
+
+See `chromosome_detection.ipynb`
+
 I fine-tuned You Only Look Once, version 11 (YOLOv11) to perform chromosome detection at the bounding box level. For this phase, bounding boxes are sufficient to at least enable detection of aneuploidy.  After fine-tuning for 30 epochs, the resulting model achieved a mean average precision of 0.99 mAP50 and 0.83 mAP50-95 on the held-out test dataset, suggesting that the model is already generalizing well.  Per-class performance is similarly strong, with the exception of the X and Y chromosomes, which are still detected at an average precision at 50 IOU of 0.98 and 0.97 respectively. 
 
 **Figure 1**
 
 *Per-class object detection metrics*
 
-![Per-class object detection metrics](per_class_metrics.png)
+![Per-class object detection metrics](assets/per_class_metrics.png)
 
 **Figure 2**
 
 *Normalized Confusion Matrix*
 
-![Normalized Confusion Matrix](confusion_matrix_normalized.png)
+![Normalized Confusion Matrix](assets/confusion_matrix_normalized.png)
 
 ## Chromosome Segmentation
+
+See `segmentation_and_karygram_analysis.ipynb`
 
 For segmentation, I used Meta’s Segment Anything Model v2 (SAMv2), which performs well in generalizing across diverse chromosomal shapes and sizes, and preserving intricate chromosomal details, such as banding patterns, critical for downstream analysis. 
 What I found is that no fine-tuning is required for SAMv2 to perform well when provided with the detected bounding boxes for each chromosome.  
@@ -30,7 +35,7 @@ What I found is that no fine-tuning is required for SAMv2 to perform well when p
 
 *Example output from chromosome segmentation given detected bounding boxes*
 
-![Example output from chromosome segmentation given detected bounding boxes](segmented_chromosomes.png)
+![Example output from chromosome segmentation given detected bounding boxes](assets/segmented_chromosomes.png)
 
 Chromosome segmentation involves precisely isolating 24 distinct chromosomes, including 22 autosomes and two sex chromosomes (X and Y). Each chromosome is characterized by unique features such as size, centromere position, and banding patterns:
 Autosomes (1–22): Chromosomes 1 through 22 vary in size and gene density. For example, chromosome 1 is the largest, containing genes crucial for brain development and cell cycle regulation, while smaller chromosomes like 21 and 22 are gene-dense and associated with conditions like trisomy 21.
@@ -38,18 +43,23 @@ Sex Chromosomes (X and Y): The X chromosome contains numerous genes essential fo
 Each chromosome’s structural and numerical integrity directly impacts cellular function and organismal development. The automated segmentation ensures precise differentiation of these chromosomes to identify abnormalities effectively.
 
 ## Karyogram Synthesis
+
+See `segmentation_and_karygram_analysis.ipynb`
+
 In this phase, the isolated chromosomes are extracted from the original image with their information intact, and grouped together for easy comparison.  In a healthy example, there are 2 of each chromosome, as seen in the synthesized karyogram below.
 
 **Figure 4**
 
 *Example of automated karyogram output*
 
-![Example of automated karyogram output](karyogram.png)
+![Example of automated karyogram output](assets/karyogram.png)
 
 ## Chromosomal Disorder Detection
 
 For cytogenetic analysis, aneuploidies can be detected by simply counting the number of detected chromosomes of each type. (Berisha et al., 2020)
-Aneuploidy Detection:
+
+### Aneuploidy Detection
+
 Quantifying the number of chromosomes to identify numerical aberrations, such as trisomies or monosomies.
 
 Commonly identified aneuploidies include:
@@ -60,15 +70,22 @@ Commonly identified aneuploidies include:
 * Monosomy X (Turner syndrome): Manifests as short stature, infertility, and cardiovascular defects in females.
 * XXY (Klinefelter syndrome): Results in male hypogonadism, infertility, and often subtle cognitive impairments.
 
-Structural Variation Analysis:
+### Structural Variation Analysis
+
 Categorizing segmented chromosomes based on deviations in banding patterns or morphological structure.
+
 Common structural abnormalities include:
+
 * Deletions: Loss of genetic material, as seen in Cri-du-chat syndrome (deletion on chromosome 5p).
 * Duplications: Extra copies of genetic regions, which may lead to gene overexpression and developmental issues.
 * Inversions: Rearrangement of genetic material within the same chromosome, which may disrupt gene regulation.
 * Translocations: Exchange of genetic material between non-homologous chromosomes, frequently observed in cancers such as chronic myeloid leukemia
 
 This framework not only identifies common disorders but also provides a foundation for recognizing novel or rare chromosomal anomalies through advanced learning algorithms, by capturing precise structural data about each detected chromosome. 
+
+## Notes
+
+While the automated detection and segmentation of chromosomes performs well and is adequate for detecting aneuploidies, this study did not attempt to automate the detection of structural variations beyond isolating as much information as possible about those chromosomes from the original image. An ideal dataset for this automation would include comprehensive examples of deletions, duplications, inversions, and translocations, but I was unable to find such a dataset.
 
 ## References
 
